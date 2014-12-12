@@ -1,0 +1,150 @@
+/* simple layout for mobile and legacy browsers */
+@import url(http://fonts.googleapis.com/css?family=Droid+Sans:400,700);
+
+*
+{
+	padding: 0;
+	margin: 0;
+}
+
+body
+{
+	font-family: "Droid Sans", Arial, Helvetica, Freesans, sans-serif;
+	font-size: 90%;
+	color: #333;
+	background-color: #999;
+}
+
+/* layout */
+header
+{
+	position: relative;
+	width: 96%;
+	background-color: #333;
+	padding: 10px 2%;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+header p
+{
+	font-size: 2em;
+	font-weight: 700;
+	margin: 0;
+	color: #fff;
+}
+
+footer
+{
+	padding: 1.2em 0;
+	color: #ddd;
+	background-color: #333;
+}
+
+footer p
+{
+	font-size: 90%;
+	text-align: center;
+	margin: 0.3em 0;
+}
+
+footer a
+{
+	color: #fff
+}
+
+article
+{
+	width: 96%;
+	padding: 2em 2%;
+	background-color: #fff;
+}
+
+aside
+{
+	border-top: 2px groove #999;
+	padding-top: 1em;
+}
+
+/* navigation */
+nav
+{
+	width: 96%;
+	padding: 20px 2%;
+	background-color: #eee;
+}
+
+nav ul
+{
+	list-style-type: none;
+	width: 100%;
+	font-weight: 700;
+}
+
+nav li
+{
+	width: 100%;
+}
+
+nav ul ul
+{
+	display: none;
+	font-weight: 400;
+}
+
+nav ul li.active ul
+{
+	display: block;
+	width: 96%;
+	margin-left: 4%; 
+}
+
+nav a
+{
+	display: block;
+	height: 1em;
+	padding: 10px 20px;
+	text-decoration: none;
+	margin: 1px 0;
+	color: #fff;
+	background-color: #666;
+	border: 2px solid #333;
+	border-radius: 5px;
+}
+
+nav ul ul a
+{
+	background-color: #888;
+}
+
+nav a:hover, nav a:focus
+{
+	background-color: #333;
+}
+
+/* typography */
+h1, h2
+{
+	font-weight: 400;
+	font-size: 1.8em;
+}
+
+h2
+{
+	font-size: 1.4em;
+}
+
+p
+{
+	line-height: 1.4em;
+	margin-bottom: 1em;
+}
+
+a
+{
+	color: #00c;
+}
+
+article a:hover, article a:focus
+{
+	color: #55f;
+}
