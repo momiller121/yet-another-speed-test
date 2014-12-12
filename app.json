@@ -1,7 +1,7 @@
 {
-  "name": "Node.js Getting Started",
-  "description": "A barebones Node.js app using Express 4",
-  "repository": "https://github.com/heroku/node-js-getting-started",
+  "name": "Yet Another Speed Test",
+  "description": "Browser / Node.js (server side) based speed test with a focus on support for IE6.",
+  "repository": "https://github.com/momiller121/yet-another-speed-test",
   "logo": "http://node-js-sample.herokuapp.com/node.svg",
-  "keywords": ["node", "express", "static"]
+  "keywords": ["speed", "test", "node"]
 }
