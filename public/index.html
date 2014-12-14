@@ -24,6 +24,7 @@
 
 
             $("#download").click(function () {
+                $("#results").empty();
                 var startTime = new Date().getTime();
                 $.ajax({
                     url: "/download",
@@ -31,7 +32,7 @@
                     cache:false})
                         .done(function () {
                             var end = new Date().getTime();
-                            alert("success in "+(end-startTime)+"ms");
+                            $("#results").append("<p>Download: "+(end-startTime)+"ms</p>");
                         })
                         .fail(function () {
                             alert("error");
@@ -39,7 +40,38 @@
                         .always(function () {
                             //alert("complete");
                         });
+
+                $.ajax({
+                    url: "/download",
+                    type: "HEAD",
+                    cache:false})
+                        .done(function () {
+                            var end = new Date().getTime();
+                            $("#results").append("<p>Latency: "+(end-startTime)+"ms</p>");
+                        })
+                        .fail(function () {
+                            alert("error");
+                        })
+                        .always(function () {
+                            //alert("complete");
+                        });
+
             });
+
+
+            $.ajax({
+                url: "/myip",
+                cache:false})
+                    .done(function (data) {
+                        $("#clientIp").empty().append(data.clientIp);
+                        $("#clientIpRoutable").empty().append(""+data.clientIpRoutable);
+                    })
+                    .fail(function () {
+                        //quietly
+                    })
+                    .always(function () {
+                        //quietly
+                    });
 
 
         });
@@ -71,9 +103,15 @@
             <input type="hidden" name="userAgentId" value="">
             <input type="button" id="download" value="Start Speed Test" class="pull-right">
         </fieldset>
+        <div id="results">
+
+        </div>
     </div>
 </div>
-<footer class="hide-on-phone hide-on-tablet clearfix"><p>User Agent ID: <span id="userAgentId"></span></p>
+<footer class="hide-on-phone hide-on-tablet clearfix">
+    <p>User Agent Fingerprint: <span id="userAgentId"></span></p>
+    <p>Client IP Address: <span id="clientIp"></span></p>
+    <p>Routable: <span id="clientIpRoutable"></span></p>
 </footer>
 </body>
 </html>

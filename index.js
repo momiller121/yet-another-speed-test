@@ -1,5 +1,7 @@
 var express = require('express');
 var util = require('./util');
+var get_ip = require('ipware')().get_ip;
+
 var app = express();
 
 //constants
@@ -8,19 +10,28 @@ var MAX_PACKAGES=10;
 
 app.set('port', (process.env.PORT || 5000));
 
-//enable basic CORS
+
 app.use(function(req, res, next) {
+  //enable basic CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
+
+  //enrich request with best attempt at accurate client IP
+  //(this is based on inclusion of https://www.npmjs.com/package/ipware)
+  get_ip(req);
+
   return next();
 });
 
 //enable static HTTP published resources
 app.use(express.static(__dirname + '/public'));
 
-app.get('/', function(request, response) {
-  response.send('Yet Another Speed Test!');
+//service end point providing client access to client IP
+app.get('/myip', function(request, response) {
+  response.writeHead(200, {'content-type': 'application/json'});
+  response.end('{"clientIp": "'+request.clientIp+'", "clientIpRoutable": '+request.clientIpRoutable+'}');
 });
 
+//service end point for data down
 app.get('/download', function(request, response) {
   if(util.isInt(request.query.packageSize) && parseInt(request.query.packageSize)>MAX_PACKAGES){
     response.writeHead(403, {'content-type': 'application/json'});
