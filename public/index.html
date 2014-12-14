@@ -1,28 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>yet-another-speed-test</title>
-    <link rel="stylesheet" media="all" href="simple.css"/>
-    <link rel="stylesheet" media="screen and (min-width:801px)" href="complex.css" title="complex layout"/>
-    <!--[if (IE 8)]>
-    <link rel="stylesheet" media="screen" href="complex.css" title="complex layout"/>
-    <![endif]-->
-    <!--[if lt IE 9]>
-    <script src="html5.js"></script>
-    <![endif]-->
-    <!-- credit: http://www.sitepoint.com/support-old-browsers-responsive-web-design/ -->
-    <!-- credit: http://twitter.com/craigbuckler Craig Buckler of http://optimalworks.net/ -->
-    <!-- https://www.modern.ie/en-us/virtualization-tools#downloads >> IE6 testing support -->
-    <script src="noconsole.js"></script>
-    <script src="jquery-1.8.3.min.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta http-equiv="Expires" content="Sat, 01 Dec 2001 00:00:00 GMT">
+
+    <link rel="stylesheet" type="text/css" href="./resources/reset.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="./resources/responsive.css" media="screen">
+    <script type="text/javascript" src="./resources/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="./resources/fingerprint.js"></script>
+
     <script>
         $(document).ready(function () {
-            //bind the download button click event
+            // finger printing the user agent will enrich the collected results
+            var userAgentId = new Fingerprint({screen_resolution: true, ie_activex: true}).get();
+            $("#userAgentId").empty().append(userAgentId);
+
+
             $("#download").click(function () {
                 var startTime = new Date().getTime();
                 $.ajax({
                     url: "/download",
+                    data:{packageSize:2},
                     cache:false})
                         .done(function () {
                             var end = new Date().getTime();
@@ -32,46 +37,43 @@
                             alert("error");
                         })
                         .always(function () {
-                            alert("complete");
+                            //alert("complete");
                         });
             });
+
+
         });
     </script>
 </head>
 <body>
-<!-- header -->
-<header>
-    <p>Yet Another Speed Test</p>
-</header>
-<!-- main content -->
-<article>
-    <section>
-        <h1>Title</h1>
+<!-- Header -->
+<div id="header">
+    <div><img src="./resources/logo.jpg" class="main-logo"></div>
+</div>
+<!-- Body -->
+<div class="content">
 
-        <p>This page...</p>
+    <div id="form">
+        <h2 class="center">Network Speed Test</h2>
+        <fieldset>
+            <div id="login-error">
+                <label class="error"></label>
+            </div>
 
-        <div>
-            <input type="button" id="download" value="download"/>
-        </div>
-    </section>
-    <!-- sidebar -->
-    <aside>
-        <h2>Sub-Title</h2>
+            <div id="username-error" class="error" style="display:none">
+                Please enter an authorization key value...
+            </div>
+            <div id="username-wrapper" class="box-shadow">
+                <label>Key:</label>
+                <input type="text" id="username" name="Key" placeholder="Authorization Key" autofocus="">
+            </div>
 
-        <p>foo</p>
-    </aside>
-</article>
-<!-- navigation -->
-<nav>
-    <ul>
-        <li><a href="#">Home</a></li>
-        <li class="active"><a href="#">Products</a></li>
-        <li><a href="#">Contact</a></li>
-    </ul>
-</nav>
-<!-- footer -->
-<footer>
-    <p>Speed is good.</p>
+            <input type="hidden" name="userAgentId" value="">
+            <input type="button" id="download" value="Start Speed Test" class="pull-right">
+        </fieldset>
+    </div>
+</div>
+<footer class="hide-on-phone hide-on-tablet clearfix"><p>User Agent ID: <span id="userAgentId"></span></p>
 </footer>
 </body>
 </html>
