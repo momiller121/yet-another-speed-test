@@ -3,6 +3,7 @@ var util = require('./util');
 var get_ip = require('ipware')().get_ip;
 
 var app = express();
+app.enable('trust proxy') //this allows Express to collect proxy addresses
 
 //constants
 var ONE_MEGABYTE=1048576;
@@ -27,8 +28,22 @@ app.use(express.static(__dirname + '/public'));
 
 //service end point providing client access to client IP
 app.get('/myip', function(request, response) {
+  console.log(request.ip);
+  console.log(request.ips);
   response.writeHead(200, {'content-type': 'application/json'});
   response.end('{"clientIp": "'+request.clientIp+'", "clientIpRoutable": '+request.clientIpRoutable+'}');
+});
+
+
+//service end point providing client access to client IP
+app.get('/ip2', function(request, response) {
+  console.log(request.ip);
+  console.log(request.ips);
+  response.writeHead(200, {'content-type': 'application/json'});
+  var foo = {};
+  foo.ip = request.ip;
+  foo.ips = request.ips;
+  response.end(JSON.stringify(foo,undefined,2));
 });
 
 //service end point for data down
