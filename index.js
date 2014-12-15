@@ -1,6 +1,5 @@
 var express = require('express');
 var util = require('./util');
-var get_ip = require('ipware')().get_ip;
 
 var app = express();
 app.enable('trust proxy') //this allows Express to collect proxy addresses
@@ -15,11 +14,6 @@ app.set('port', (process.env.PORT || 5000));
 app.use(function(req, res, next) {
   //enable basic CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
-
-  //enrich request with best attempt at accurate client IP
-  //(this is based on inclusion of https://www.npmjs.com/package/ipware)
-  get_ip(req);
-
   return next();
 });
 
@@ -28,22 +22,11 @@ app.use(express.static(__dirname + '/public'));
 
 //service end point providing client access to client IP
 app.get('/myip', function(request, response) {
-  console.log(request.ip);
-  console.log(request.ips);
   response.writeHead(200, {'content-type': 'application/json'});
-  response.end('{"clientIp": "'+request.clientIp+'", "clientIpRoutable": '+request.clientIpRoutable+'}');
-});
-
-
-//service end point providing client access to client IP
-app.get('/ip2', function(request, response) {
-  console.log(request.ip);
-  console.log(request.ips);
-  response.writeHead(200, {'content-type': 'application/json'});
-  var foo = {};
-  foo.ip = request.ip;
-  foo.ips = request.ips;
-  response.end(JSON.stringify(foo,undefined,2));
+  var ipInfo = {};
+  ipInfo.ip = request.ip;
+  ipInfo.ips = request.ips;
+  response.end(JSON.stringify(ipInfo));
 });
 
 //service end point for data down
