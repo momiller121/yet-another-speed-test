@@ -1,17 +1,24 @@
 var express = require('express');
-var crypto = require('crypto');
-var util = require('./util');
+
+// custom module to prep some random data
+var randomBuffers = require('./randomBuffers');
+
+// for the downloads, we'll keep 64kb of random buffer data in memory.
+// we'll access this later via randomBuffers.grab()
+// (we're trying to make our payloads difficult to compress enroute)
+randomBuffers.generate(64);// generate 64Kb of random buffer data
 
 var app = express();
 app.enable('trust proxy') //this allows Express to collect proxy addresses
 
 //constants
 var ONE_KB=1024;
+var LIMITS={upload:16};//cap acceptable upload size at 16Mb
 
 app.set('port', (process.env.PORT || 5000));
 
+//enable basic CORS on all routes
 app.use(function(req, res, next) {
-  //enable basic CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   next();
 });
@@ -29,24 +36,30 @@ app.get('/myip', function(request, response) {
 });
 
 
-//service end point providing client access to client IP
+/* Service end point for data upload
+ * Expecting POST /upload
+ * If the post data is too big, we kill it.
+ */
 app.post('/upload', function(request, response) {
   var uploadsize = 0;
-  request.body = new Buffer(0);
+  //request.body = new Buffer(0);
   request.on("data", function(d) {
     console.log("receiving: " + d.length + " bytes");
     uploadsize += d.length;
     if (uploadsize > ONE_KB * ONE_KB * ONE_KB) {
-      console.log("killed connection - upload was unacceptably large");
-      response.end("bar");
+      var msg = "killing connection - upload was unacceptably large";
+      console.log(msg);
+      response.writeHead(403, {'content-type': 'application/json'});
+      response.json({message:msg});
       request.connection.destroy();
+      console.log("connection killed");
     }
-    request.body = Buffer.concat([request.body, d], (request.body.length + d.length));
+    //request.body = Buffer.concat([request.body, d], (request.body.length + d.length));
   });
 
   request.on("end", function() {
     console.log("ending: "+uploadsize+" received");
-    response.end();
+    response.json({message:"I just ate "+uploadsize+" bytes"});
   });
 });
 
@@ -73,15 +86,15 @@ app.get('/download/:size', function(request, response) {
   // test for acceptability
   if(!packages[packageSize]){
     response.writeHead(403, {'content-type': 'application/json'});
-    var err = {code:403,message:"Forbidden",supported:packages};
-    response.end(JSON.stringify(err));
+    response.json({code:403,message:"Forbidden",supported:packages});
     return;
   }
 
   var max = packages[packageSize].size;
   response.writeHead(200, {'Content-length': max});
-  var b = new Buffer(crypto.pseudoRandomBytes(1024)); //1kb of randomness
+
   for(var i = 0; i < max; i += 1024) {
+    var b = randomBuffers.grab(); //1kb of random randomness
     response.write((max - i >= 1024)?b:b.slice(0,max%1024));
   }
   response.end();
