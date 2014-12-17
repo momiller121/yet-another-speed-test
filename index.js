@@ -1,7 +1,6 @@
 var express = require('express');
 var crypto = require('crypto');
 var util = require('./util');
-var randomExt = require('random-ext');
 
 var app = express();
 app.enable('trust proxy') //this allows Express to collect proxy addresses
