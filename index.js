@@ -42,7 +42,6 @@ app.get('/myip', function(request, response) {
  */
 app.post('/upload', function(request, response) {
   var uploadsize = 0;
-  //request.body = new Buffer(0);
   request.on("data", function(d) {
     console.log("receiving: " + d.length + " bytes");
     uploadsize += d.length;
@@ -54,7 +53,6 @@ app.post('/upload', function(request, response) {
       request.connection.destroy();
       console.log("connection killed");
     }
-    //request.body = Buffer.concat([request.body, d], (request.body.length + d.length));
   });
 
   request.on("end", function() {
