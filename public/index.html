@@ -13,123 +13,55 @@
 
     <link rel="stylesheet" type="text/css" href="./resources/reset.css" media="screen">
     <link rel="stylesheet" type="text/css" href="./resources/responsive.css" media="screen">
-    <script type="text/javascript" src="./resources/noconsole.js"></script>
     <script type="text/javascript" src="./resources/jquery-1.8.3.min.js"></script>
     <script type="text/javascript" src="./resources/fingerprint.js"></script>
 
     <script>
-
-        function UploadResponseSampler() {
-            return {
-                run: function (sampleIteration, callback) {
-                    var start = new Date();
-                    var customContext = {
-                        cb: callback,
-                        startTime: start,
-                        sampleIteration: sampleIteration
-                    };
-                    var request = $.ajax({
-                        url: "https://yet-another-speed-test.herokuapp.com/upload",
-//url: "http://localhost:5000/upload",
-                        type: "POST",
-                        data: {
-                            id: this.dat(sampleIteration)
-                        },
-                        context: customContext
-                    });
-                    request.done(function (msg) {
-                        var end = new Date();
-                        var elapsed = end - this.startTime;
-                        console.log("Upload took " + elapsed + "ms");
-                        this.cb(this.sampleIteration, elapsed);
-                    });
-                    request.fail(function (jqXHR, textStatus) {
-//TODO - report the upload too large message here
-//need some sort of abort flag?
-                        alert("Request failed: Speed test is not currently available. Please try again later." + textStatus);
-                    });
-                },
-                getResponseSummary: function (resultArray) {
-                    console.log(resultArray.length + " items in the results");
-                    var sorted = resultArray.sort(function (a, b) {
-                        return b.bytes - a.bytes;
-                    }); // sort descending by bytes (we want the largest successful payloads)
-                    console.log(sorted);
-                    return Math.round(((sorted[0].rate + sorted[1].rate) / 2)) + " kb/s";
-                },
-                steps: function () {
-                    var ONE_MB = 1024 * 1024;
-                    return [128 * 1024, 256 * 1024, 512 * 1024, ONE_MB, 2 * ONE_MB, 4 * ONE_MB, 8 * ONE_MB, 16 * ONE_MB];
-                },
-                dat: function (iteration) {
-                    var text = [];
-                    var steps = this.steps();
-                    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-                    console.log("Generating random upload data: " + steps[iteration] + " bytes");
-                    if (iteration >= steps.length) {
-                        iteration = steps.length - 1; // bad idea TODO revisit
-                    }
-                    for (var i = 0; i < steps[iteration]; i++)
-                        text.push(possible.charAt(Math.floor(Math.random() * possible.length)));
-                    return text.join('');
-                },
-                prettyThroughput: function (bytes, time) {
-                    var kb = bytes / 1024;
-                    var sec = time / 1000;
-                    return Math.round(kb / sec) + " kb/s";
-                },
-                minSamples: 3,
-                maxSamples: 8,
-                responseValidityThreshold: 8000 //ms (we want a request that lasts at least this long for our sample)
-            };
-        }
-
-
-        var upresults = [];
         $(document).ready(function () {
             // finger printing the user agent will enrich the collected results
             var userAgentId = new Fingerprint({screen_resolution: true, ie_activex: true}).get();
             $("#userAgentId").empty().append(userAgentId);
-
-            $("#disp").empty().append("<p>ready to begin...</p>");
-            $("#disp").append("<div id='results'/>");
-            $("#disp").prepend("<input class='pull-right' type=button value='Start Test' id='start'></input>");
-            $("#results").append("<pre/>");
-            $("#start").click(function () {
-                upresults = []; //reset results
-                $("#results pre").empty();
-                var sampleLimit = 12;
-                var sample = function (sampleIteration) {
-                    console.log("initiating iteration " + sampleIteration);
-                    var s = new UploadResponseSampler();
-// run the sampler's main function
-                    s.run(sampleIteration, function (iteration, responseTime) {
-                        var lastUploadSize = s.steps()[iteration];
-                        upresults.push({
-                            rt: responseTime,
-                            bytes: lastUploadSize,
-                            rate: Math.round((lastUploadSize / 1024) / (responseTime / 1000))
+            $("#download").click(function () {
+                $("#results").empty();
+                var startTime = new Date().getTime();
+                $.ajax({
+                    url: "/download",
+                    data: {packageSize: 2},
+                    cache: false
+                })
+                        .done(function () {
+                            var end = new Date().getTime();
+                            $("#results").append("<p>Download: " + (end - startTime) + "ms</p>");
+                        })
+                        .fail(function () {
+                            alert("error");
+                        })
+                        .always(function () {
+                            //alert("complete");
                         });
-                        $("#results pre").append(">> " + lastUploadSize + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(lastUploadSize, responseTime) + "]\n");
-                        if (upresults.length < sampleLimit && iteration + 1 < s.maxSamples && responseTime < s.responseValidityThreshold) {
-                            sample(++iteration); //recursive call to collect samples
-                        } else {
-                            var responseSummary = s.getResponseSummary(upresults);
-                            console.log("Average upload throughput: " + responseSummary);
-                            $("#results pre").append("\n\n>> Average upload throughput: " + responseSummary + "  (average of 2 longest running uploads).");
-                        }
-                    });
-                };
-                sample(0); // initiate sampling
+                $.ajax({
+                    url: "/download",
+                    type: "HEAD",
+                    cache: false
+                })
+                        .done(function () {
+                            var end = new Date().getTime();
+                            $("#results").append("<p>Latency: " + (end - startTime) + "ms</p>");
+                        })
+                        .fail(function () {
+                            alert("error");
+                        })
+                        .always(function () {
+                            //alert("complete");
+                        });
             });
-
-
             $.ajax({
                 url: "/myip",
                 cache: false
             })
-                    .done(function (client) {
-                        $("#clientIp").empty().append(client.ip);
+                    .done(function (data) {
+                        $("#clientIp").empty().append(data.clientIp);
+                        $("#clientIpRoutable").empty().append("" + data.clientIpRoutable);
                     })
                     .fail(function () {
                         //quietly
@@ -138,8 +70,6 @@
                         //quietly
                     });
         });
-
-
     </script>
 </head>
 <body>
@@ -166,11 +96,10 @@
             </div>
 
             <input type="hidden" name="userAgentId" value="">
+            <input type="button" id="download" value="Start Speed Test" class="pull-right">
         </fieldset>
-        <div id="disp">
-            <div id="results">
+        <div id="results">
 
-            </div>
         </div>
     </div>
 </div>
@@ -178,6 +107,8 @@
     <p>User Agent Fingerprint: <span id="userAgentId"></span></p>
 
     <p>Client IP Address: <span id="clientIp"></span></p>
+
+    <p>Routable: <span id="clientIpRoutable"></span></p>
 </footer>
 </body>
 </html>
