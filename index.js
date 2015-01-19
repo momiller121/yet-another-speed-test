@@ -1,21 +1,42 @@
 var express = require('express');
+var uuid = require('node-uuid');
 var config = require('./config');
 var randomBuffers = require('./randomBuffers');
+var log = config.accesslog;
+var serverlog = config.serverlog;
+
+serverlog.info('Server starting up');
+var http = require('http');
+http.globalAgent.maxSockets = 100;
 
 // for the downloads, we'll keep 64kb of random buffer data in memory.
 // we'll access this later via randomBuffers.grab()
-// (we're trying to make our payloads difficult to compress enroute)
-randomBuffers.generate(randomBuffers.size);// generate 4Mb of random buffer data in memory
+// (we're trying to make our payloads less compressable enroute)
+randomBuffers.generate(randomBuffers.size);// generate 4MB (64x64kB) of random buffer data in memory
 
 var app = express();
 app.enable('trust proxy') //this allows Express to collect proxy addresses
 
 app.set('port', (process.env.PORT || 5000));
 
-//enable basic CORS on all routes
+//enable CORS and logging middleware on all routes
 app.use(function(req, res, next) {
+  var start = Date.now();
   res.setHeader("Access-Control-Allow-Origin", "*");
+  req.req_id = uuid.v4();                // augment HTTP request with a UUID
+  if(!req.connection.customId){          // if it doesn't already have one
+    req.connection.customId = uuid.v4(); //   augment the http connection with a UUID
+  }                                      //   (http keep-alive lets us track per connection)
+  log.info({req: req}, 'request start'); // log the HTTP request
+  res.on('finish', function() {          // log the HTTP response on the finish event
+    log.info({ inResponseTo: req.req_id, res: res, duration: Date.now() - start }, 'request finish');
+  })
   next();
+});
+
+// for now, 302 to the client page
+app.get('/', function(request, response) {
+  response.redirect("client.html");
 });
 
 //enable static HTTP published resources
@@ -30,14 +51,16 @@ app.get('/myip', function(request, response) {
 /* Service end point for data upload
  * Expecting POST /upload
  * If the post data is too big, we kill it.
+ * (Data POSTed here is black-holed)
  */
 app.post('/upload', function(request, response) {
   var uploadsize = 0;
   request.on("data", function(d) {
     uploadsize += d.length;
+    d = null; //dump the content
     if (uploadsize > config.upload.maxPayload) {
       var msg = "killing connection - upload was unacceptably large";
-      console.log(msg);
+      serverlog.info(msg); //TODO - need to look at logging output for error case
       response.status(403).json({message:msg});
       request.connection.destroy();
       return;
@@ -45,8 +68,16 @@ app.post('/upload', function(request, response) {
   });
 
   request.on("end", function() {
-    response.json({message:"I just ate "+uploadsize+" bytes"});
+    var msg = "I just ate "+uploadsize+" bytes";
+    response.json({message:msg});
   });
+});
+
+/*
+ * Allow the client to discover the supported download packages
+ */
+app.get('/download/packages', function(request, response) {
+  response.json(config.download.packages);
 });
 
 /* Service end point for data download
@@ -54,7 +85,7 @@ app.post('/upload', function(request, response) {
  * If the requested value is not acceptable, the request flows through to a 404.
  */
 app.get('/download/:size', function(request, response) {
-  var packages = config.packages;
+  var packages = config.download.packages;
   var packageSize = "_"+request.params.size.toUpperCase().trim();
 
   // test for acceptability
@@ -76,4 +107,7 @@ app.get('/download/:size', function(request, response) {
 
 app.listen(app.get('port'), function() {
   console.log("yet-another-speed-test app is running at localhost:" + app.get('port'));
+  var cpuCount = require('os').cpus().length;
+  serverlog.info("yet-another-speed-test app is running at localhost:" + app.get('port'));
+  serverlog.info("cpuCount: "+cpuCount);
 });

@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "express": "~4.9.x",
-    "bunyan": "^1.2.3"
+    "bunyan": "^1.2.3",
+    "node-uuid": "^1.4.2"
   },
   "engines": {
     "node": "0.10.x"
