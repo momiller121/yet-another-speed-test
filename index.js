@@ -1,5 +1,12 @@
+var utils = require('./util');
 var express = require('express');
 var uuid = require('node-uuid');
+
+//before we log the logger, make sure we have the directory we need
+utils.ensureExists(__dirname + '/logs', 0744, function(err) {
+  if (err) {console.log("Error trying to create logging directory : "+err.message);}
+});
+
 var config = require('./config');
 var randomBuffers = require('./randomBuffers');
 var log = config.accesslog;
