@@ -25,11 +25,26 @@
         }
     </style>
     <script>
-
+    $(document).ready(function(){
+        // determine and display client IP address
+        var packageRequest = $.ajax({
+            url: "/myip",
+            type: "GET"
+        });
+        packageRequest.done(function (data) {
+            $("#ip").empty().append(data.ip);
+            var userAgentId = new Fingerprint({screen_resolution: true, ie_activex: true}).get();
+            $("#fp").empty().append(userAgentId);
+        });
+        packageRequest.fail(function (jqXHR, textStatus) {
+            alert("Request for client IP: Unable to retreive client IP." + textStatus);
+        });
+    });
     </script>
 </head>
 <body>
 <h3>Network Speed Test</h3>
+<p>Client IP Logged: <span id="ip"></span> Client Fingerprint: <span id="fp"></span></p>
 <div id=results></div>
 </body>
 </html>
