@@ -57,38 +57,27 @@ function UploadResponseSampler() {
 }
 
 
-
 var upresults = [];
-$(document).ready(function () {
-    $("#results").empty().append("<p>ready to begin...</p>");
-    $("#results").append("<input type=button value='Start Upload Test' id=foo></input>");
-    $("#results").append("<pre/>");
-    $("#foo").click(function () {
-        upresults = []; //reset results
-        $("#results pre").empty();
-        var sampleLimit = 12;
-        var sample = function (sampleIteration) {
-            var s = new UploadResponseSampler();
-            s.run(sampleIteration, function (iteration, responseTime) {
-                var lastUploadSize = s.steps()[iteration];
-                upresults.push({
-                    rt: responseTime,
-                    bytes: lastUploadSize,
-                    rate: Math.round((lastUploadSize / 1024) / (responseTime / 1000))
-                });
-                $("#results pre").append(">> " + lastUploadSize + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(lastUploadSize, responseTime) + "]\r\n");
-                if (upresults.length < sampleLimit && iteration + 1 < s.maxSamples && responseTime < s.responseValidityThreshold) {
-                    sample(++iteration); //recursive call to collect samples
-                } else {
-                    var responseSummary = s.getResponseSummary(upresults);
-                    $("#results pre").append("\r\n\r\n>> Average upload throughput: " + responseSummary + "  (average of 2 longest running uploads).");
-                }
+var doUpload = function () {
+    upresults = []; //reset results
+    var sampleLimit = 12;
+    var sample = function (sampleIteration) {
+        var s = new UploadResponseSampler();
+        s.run(sampleIteration, function (iteration, responseTime) {
+            var lastUploadSize = s.steps()[iteration];
+            upresults.push({
+                rt: responseTime,
+                bytes: lastUploadSize,
+                rate: Math.round((lastUploadSize / 1024) / (responseTime / 1000))
             });
-        };
-        sample(0); // initiate sampling
-    });
-});
-
-//lock the button while running
-//abort mechanism
-//more intelligent throttle on startup
+            $("#results pre").append(">> " + lastUploadSize + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(lastUploadSize, responseTime) + "]\r\n");
+            if (upresults.length < sampleLimit && iteration + 1 < s.maxSamples && responseTime < s.responseValidityThreshold) {
+                sample(++iteration); //recursive call to collect samples
+            } else {
+                var responseSummary = s.getResponseSummary(upresults);
+                $("#results pre").append("\r\n\r\n>> Average upload throughput: " + responseSummary + "  (average of 2 longest running uploads).");
+            }
+        });
+    };
+    sample(0); // initiate sampling
+};

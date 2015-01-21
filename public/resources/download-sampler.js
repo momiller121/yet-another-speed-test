@@ -43,8 +43,7 @@ function DownloadResponseSampler() {
 };
 
 
-
-$(document).ready(function () {
+var doDownload = function () {
     var packageRequest = $.ajax({
         url: "/download/packages",
         type: "GET",
@@ -52,41 +51,33 @@ $(document).ready(function () {
     });
     packageRequest.done(function (data) {
         packageCache = [];
-        $.each(data,function(index,item){
+        $.each(data, function (index, item) {
             packageCache.push(item);
         });
     });
     packageRequest.fail(function (jqXHR, textStatus) {
         alert("Request for download packages: Unable to retreive available package data." + textStatus);
     });
-
-
-    $("#results").empty().append("<p>ready to begin...</p>");
-    $("#results").append("<input type=button value='Start Download Test' id=foo></input>");
-    $("#results").append("<pre/>");
-    $("#foo").click(function () {
-        downresults = []; //reset results
-        $("#results pre").empty();
-        var sampleLimit = 12;
-        var sample = function (sampleIteration, packageCache) {
-            var s = new DownloadResponseSampler();
-            // run the sampler's main function
-            s.run(sampleIteration, packageCache, function (iteration, responseTime) {
-                var lastDownloadSize = s.steps[iteration];
-                downresults.push({
-                    rt: responseTime,
-                    bytes: s.steps[iteration].size,
-                    rate: Math.round((s.steps[iteration].size / 1024) / (responseTime / 1000))
-                });
-                $("#results pre").append(">> " + s.steps[iteration].size + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(s.steps[iteration].size, responseTime) + "]\r\n");
-                if (downresults.length < sampleLimit && iteration + 1 < s.maxSamples && responseTime < s.responseValidityThreshold) {
-                    sample(++iteration, packageCache); //recursive call to collect samples
-                } else {
-                    var responseSummary = s.getResponseSummary(downresults);
-                    $("#results pre").append("\r\n\r\n>> Average download throughput: " + responseSummary + "  (average of 2 longest running downloads).");
-                }
+    downresults = []; //reset results
+    var sampleLimit = 12;
+    var sample = function (sampleIteration, packageCache) {
+        var s = new DownloadResponseSampler();
+        // run the sampler's main function
+        s.run(sampleIteration, packageCache, function (iteration, responseTime) {
+            var lastDownloadSize = s.steps[iteration];
+            downresults.push({
+                rt: responseTime,
+                bytes: s.steps[iteration].size,
+                rate: Math.round((s.steps[iteration].size / 1024) / (responseTime / 1000))
             });
-        };
-        sample(0,packageCache); // initiate sampling
-    });
-});
+            $("#results pre").append(">> " + s.steps[iteration].size + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(s.steps[iteration].size, responseTime) + "]\r\n");
+            if (downresults.length < sampleLimit && iteration + 1 < s.maxSamples && responseTime < s.responseValidityThreshold) {
+                sample(++iteration, packageCache); //recursive call to collect samples
+            } else {
+                var responseSummary = s.getResponseSummary(downresults);
+                $("#results pre").append("\r\n\r\n>> Average download throughput: " + responseSummary + "  (average of 2 longest running downloads).");
+            }
+        });
+    };
+    sample(0, packageCache); // initiate sampling
+};
