@@ -26,7 +26,7 @@ app.enable('trust proxy') //this allows Express to collect proxy addresses
 
 app.set('port', (process.env.PORT || 5000));
 
-// Client authorization
+// Client authorization [protect the upload and download resources]
 function restrict(req, res, next) {
   if (utils.ipInRange(config,req.ip)) {
     next();
@@ -77,7 +77,7 @@ app.head('/authcheck', restrict, function(request, response) {
  * If the post data is too big, we kill it.
  * (Data POSTed here is black-holed)
  */
-app.post('/upload', function(request, response) {
+app.post('/upload', restrict, function(request, response) {
   var uploadsize = 0;
   request.on("data", function(d) {
     uploadsize += d.length;
