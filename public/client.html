@@ -27,18 +27,36 @@
     <script>
     $(document).ready(function(){
         // determine and display client IP address
-        var packageRequest = $.ajax({
+        var ipRequest = $.ajax({
             url: "/myip",
             type: "GET"
         });
-        packageRequest.done(function (data) {
+        ipRequest.done(function (data) {
             $("#ip").empty().append(data.ip);
             var userAgentId = new Fingerprint({screen_resolution: true, ie_activex: true}).get();
             $("#fp").empty().append(userAgentId);
+            var authorizationCheck = $.ajax({
+                url: "/authcheck",
+                type: "HEAD",
+                asynch:false
+            });
+            authorizationCheck.done(function (data) {
+                $("#auth").empty().append(" Allowed.");
+            });
+            authorizationCheck.fail(function (jqXHR, textStatus) {
+                if(jqXHR.status == 403){
+                    $("#auth").empty().append(" UNAUTHORIZED - Please contact an administrator to enable access.");
+                }else{
+                    $("#auth").empty().append(" ERROR - Authorization undetermined. Please contact an administrator for assistance.");
+                }
+            });
         });
-        packageRequest.fail(function (jqXHR, textStatus) {
+        ipRequest.fail(function (jqXHR, textStatus) {
             alert("Request for client IP: Unable to retreive client IP." + textStatus);
         });
+        $("#results").empty().append("<p>authorizing client...<span id=\"auth\"></span></p>");
+        //$("#results").append("<input type=button value='Start Test' id=foo></input>");
+        $("#results").append("<pre/>");
     });
     </script>
 </head>

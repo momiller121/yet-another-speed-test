@@ -2,7 +2,7 @@ var utils = require('./util');
 var express = require('express');
 var uuid = require('node-uuid');
 
-//before we log the logger, make sure we have the directory we need
+//before we load the logger, make sure we have the directory we need
 utils.ensureExists(__dirname + '/logs', 0744, function(err) {
   if (err) {console.log("Error trying to create logging directory : "+err.message);}
 });
@@ -25,6 +25,16 @@ var app = express();
 app.enable('trust proxy') //this allows Express to collect proxy addresses
 
 app.set('port', (process.env.PORT || 5000));
+
+// Client authorization
+function restrict(req, res, next) {
+  if (utils.ipInRange(config,req.ip)) {
+    next();
+  } else {
+    serverlog.info("Denied client based on IP range: " +req.ip+ " is not expressed in ranges: "+config.authorizedRanges);
+    res.status(403).json({message:"client unauthorized"});
+  }
+}
 
 //enable CORS and logging middleware on all routes
 app.use(function(req, res, next) {
@@ -53,6 +63,13 @@ app.use(express.static(__dirname + '/public'));
 app.get('/myip', function(request, response) {
   response.json({ip:request.ip,ips:request.ips});
 });
+
+//service end point providing client access to client IP
+app.head('/authcheck', restrict, function(request, response) {
+  response.status(200).end();
+});
+
+
 
 
 /* Service end point for data upload
@@ -91,7 +108,7 @@ app.get('/download/packages', function(request, response) {
  * Expecting GET /download/:size where :size is an explicitly acceptable value
  * If the requested value is not acceptable, the request flows through to a 404.
  */
-app.get('/download/:size', function(request, response) {
+app.get('/download/:size', restrict, function(request, response) {
   var packages = config.download.packages;
   var packageSize = "_"+request.params.size.toUpperCase().trim();
 

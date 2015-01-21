@@ -1,6 +1,9 @@
 var fs = require('fs');
 var bunyan = require('bunyan');
 var config = {
+    // the following cidr masks represent the authorized client ip ranges
+    // It is a string array of 0 to many valid cidr masks
+    authorizedRanges:["127.0.0.1/32"], //localhost only by default
     download: {
         //These are the package sizes that are supported for download
         packages: {
