@@ -27,18 +27,19 @@ function LatencySampler() {
 
 var results = [];
 var doLatency = function (callback) {
+    $("#results div#lat").append("--------------------------------------------------<br/>LATENCY:<br/>");
     results = []; //reset results
     var sampleLimit = 12;
     var sample = function () {
         var s1 = new LatencySampler();
         s1.run(function (latency) {
             results.push(latency);
-            $("#results pre").append(">> " + latency + "ms");
+            $("#results div#lat").append(">> " + latency + "ms");
             if (results.length < sampleLimit) {
                 sample(); //recursive call to collect samples
             } else {
                 var averageLatency = s1.calculateMeanLatency(results);
-                $("#results pre").append("\r\n\r\n>> Average Latency: " + averageLatency + "ms  (single highest and single lowest value discarded).");
+                $("#results div#lat").append("<br/>>> Average Latency: <span class=dat>" + averageLatency + "ms</span>  (single highest and single lowest value discarded).<br/>");
                 callback();
             }
         });

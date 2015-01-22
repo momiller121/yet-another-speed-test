@@ -44,6 +44,7 @@ function DownloadResponseSampler() {
 
 
 var doDownload = function (callback) {
+    $("#results div#down").append("--------------------------------------------------<br/>DOWNLOAD:<br/>");
     downresults = []; //reset results
     var sampleLimit = 12;
     var sample = function (sampleIteration, packageCache) {
@@ -56,12 +57,12 @@ var doDownload = function (callback) {
                 bytes: s.steps[iteration].size,
                 rate: Math.round((s.steps[iteration].size / 1024) / (responseTime / 1000))
             });
-            $("#results pre").append(">> " + s.steps[iteration].size + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(s.steps[iteration].size, responseTime) + "]\r\n");
+            $("#results div#down").append(">> " + s.steps[iteration].size + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(s.steps[iteration].size, responseTime) + "]<br/>");
             if (downresults.length < sampleLimit && iteration + 1 < s.maxSamples && responseTime < s.responseValidityThreshold) {
                 sample(++iteration, packageCache); //recursive call to collect samples
             } else {
                 var responseSummary = s.getResponseSummary(downresults);
-                $("#results pre").append("\r\n\r\n>> Average download throughput: " + responseSummary + "  (average of 2 longest running downloads).");
+                $("#results div#down").append(">> Average download throughput: <span class=dat>" + responseSummary + "</span>  (average of 2 longest running downloads).<br/>");
                 callback();
             }
         });

@@ -1,6 +1,7 @@
 function UploadResponseSampler() {
     return {
         run: function (sampleIteration, callback) {
+            var postData = this.genData(sampleIteration); //build the post data outside of the timer
             var start = new Date;
             var customContext = {
                 cb: callback,
@@ -11,7 +12,7 @@ function UploadResponseSampler() {
                 url: "/upload",
                 type: "POST",
                 data: {
-                    id: this.dat(sampleIteration)
+                    id: postData
                 },
                 context: customContext
             });
@@ -35,12 +36,12 @@ function UploadResponseSampler() {
             var ONE_MB = 1024 * 1024;
             return [128 * 1024, 256 * 1024, 512 * 1024, ONE_MB, 2 * ONE_MB, 4 * ONE_MB, 8 * ONE_MB, 16 * ONE_MB];
         },
-        dat: function (iteration) {
+        genData: function (iteration) {
             var text = [];
             var steps = this.steps();
             var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             if (iteration >= steps.length) {
-                iteration = steps.length - 1; // bad idea TODO revisit
+                iteration = steps.length - 1; // bad idea TODO revisit (need to build from bigger blocks for speed)
             }
             for (var i = 0; i < steps[iteration]; i++)
                 text.push(possible.charAt(Math.floor(Math.random() * possible.length)));
@@ -59,6 +60,7 @@ function UploadResponseSampler() {
 
 var upresults = [];
 var doUpload = function (callback) {
+    $("#results div#up").append("--------------------------------------------------<br/>UPLOAD:<br/>");
     upresults = []; //reset results
     var sampleLimit = 12;
     var sample = function (sampleIteration) {
@@ -70,12 +72,12 @@ var doUpload = function (callback) {
                 bytes: lastUploadSize,
                 rate: Math.round((lastUploadSize / 1024) / (responseTime / 1000))
             });
-            $("#results pre").append(">> " + lastUploadSize + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(lastUploadSize, responseTime) + "]\r\n");
+            $("#results div#up").append(">> " + lastUploadSize + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(lastUploadSize, responseTime) + "]<br/>");
             if (upresults.length < sampleLimit && iteration + 1 < s.maxSamples && responseTime < s.responseValidityThreshold) {
                 sample(++iteration); //recursive call to collect samples
             } else {
                 var responseSummary = s.getResponseSummary(upresults);
-                $("#results pre").append("\r\n\r\n>> Average upload throughput: " + responseSummary + "  (average of 2 longest running uploads).");
+                $("#results div#up").append(">> Average upload throughput: <span class=dat>" + responseSummary + "</span>  (average of 2 longest running uploads).<br/>");
                 callback();
             }
         });

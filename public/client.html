@@ -24,17 +24,19 @@
             white-space: -o-pre-wrap; /* Opera 7 */
             word-wrap: break-word; /* Internet Explorer 5.5+ */
         }
+        .dat{font-weight:bold;font-size:110%;}
     </style>
     <script>
         // display and report results
         var report = function(){
-            function(){alert("done")};
+            $('#results p#prompt').empty().append("submitting results...");
+            alert("done");
         };
 
         // initiate the speed test
         var runTest = function () {
-            $('body').unbind();
-
+            $('body').unbind(); //drop the trigger (user needs to reload the page)
+            $('#results p#prompt').empty().append("working... (please wait)");
             var thenDownload = function(){
                 doDownload(thenUpload);
             };
@@ -46,7 +48,7 @@
 
         // set up the page for interaction
         var enableTest = function () {
-            $("#results").append("<p>Press ENTER to begin:</p>");
+            $("#results").append("<p id=prompt>Press ENTER to begin:</p>");
             // wire the enter key event as a test trigger
             $('body').keydown(function (e) {
                 var keyCode = e.keyCode || e.which,
@@ -107,13 +109,15 @@
                 alert("Request for client IP: Unable to retreive client IP." + textStatus);
             });
             $("#results").empty().append("<p>authorizing client...<span id=\"auth\"></span></p>");
-            $("#results").append("<pre/>");
+            $("#results").append("<div id=lat></div>");
+            $("#results").append("<div id=down></div>");
+            $("#results").append("<div id=up></div>");
         });
     </script>
 </head>
 <body>
 <h3>Network Speed Test</h3>
-<p>Client IP Logged: <span id="ip"></span> Client Fingerprint: <span id="fp"></span></p>
+<p>Client IP Logged: [<span id="ip"></span>] Client Fingerprint: [<span id="fp"></span>]</p>
 <div id=results></div>
 </body>
 </html>
