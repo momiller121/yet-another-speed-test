@@ -58,7 +58,7 @@ function UploadResponseSampler() {
 
 
 var upresults = [];
-var doUpload = function () {
+var doUpload = function (callback) {
     upresults = []; //reset results
     var sampleLimit = 12;
     var sample = function (sampleIteration) {
@@ -76,6 +76,7 @@ var doUpload = function () {
             } else {
                 var responseSummary = s.getResponseSummary(upresults);
                 $("#results pre").append("\r\n\r\n>> Average upload throughput: " + responseSummary + "  (average of 2 longest running uploads).");
+                callback();
             }
         });
     };

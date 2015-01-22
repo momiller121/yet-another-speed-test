@@ -11,53 +11,104 @@
     <script type="text/javascript" src="./resources/download-sampler.js"></script>
     <style>
         body {
-            background:#000;
+            background: #000;
             color: #63DE00;
-            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             line-height: 1.5em;
         }
+
         pre {
-            white-space: pre-wrap;       /* CSS3 */
-            white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-            white-space: -pre-wrap;      /* Opera 4-6 */
-            white-space: -o-pre-wrap;    /* Opera 7 */
-            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            white-space: pre-wrap; /* CSS3 */
+            white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+            white-space: -pre-wrap; /* Opera 4-6 */
+            white-space: -o-pre-wrap; /* Opera 7 */
+            word-wrap: break-word; /* Internet Explorer 5.5+ */
         }
     </style>
     <script>
-    $(document).ready(function(){
-        // determine and display client IP address
-        var ipRequest = $.ajax({
-            url: "/myip",
-            type: "GET"
-        });
-        ipRequest.done(function (data) {
-            $("#ip").empty().append(data.ip);
-            var userAgentId = new Fingerprint({screen_resolution: true, ie_activex: true}).get();
-            $("#fp").empty().append(userAgentId);
-            var authorizationCheck = $.ajax({
-                url: "/authcheck",
-                type: "HEAD",
-                asynch:false
-            });
-            authorizationCheck.done(function (data) {
-                $("#auth").empty().append(" Allowed.");
-            });
-            authorizationCheck.fail(function (jqXHR, textStatus) {
-                if(jqXHR.status == 403){
-                    $("#auth").empty().append(" UNAUTHORIZED - Please contact an administrator to enable access.");
-                }else{
-                    $("#auth").empty().append(" ERROR - Authorization undetermined. Please contact an administrator for assistance.");
+        // display and report results
+        var report = function(){
+            function(){alert("done")};
+        };
+
+        // initiate the speed test
+        var runTest = function () {
+            $('body').unbind();
+
+            var thenDownload = function(){
+                doDownload(thenUpload);
+            };
+            var thenUpload = function(){
+                doUpload(report);
+            };
+            doLatency(thenDownload);
+        };
+
+        // set up the page for interaction
+        var enableTest = function () {
+            $("#results").append("<p>Press ENTER to begin:</p>");
+            // wire the enter key event as a test trigger
+            $('body').keydown(function (e) {
+                var keyCode = e.keyCode || e.which,
+                        arrow = {left: 37, up: 38, right: 39, down: 40};
+
+                switch (keyCode) {
+                    case 13:    // Enter
+                        runTest();
+                        break;
                 }
             });
+        };
+
+        // init page display, authZ check, start event
+        $(document).ready(function () {
+            // determine and display client IP address
+            var ipRequest = $.ajax({
+                url: "/myip",
+                type: "GET"
+            });
+            ipRequest.done(function (data) {
+                $("#ip").empty().append(data.ip);
+                var userAgentId = new Fingerprint({screen_resolution: true, ie_activex: true}).get();
+                $("#fp").empty().append(userAgentId);
+                var authorizationCheck = $.ajax({
+                    url: "/authcheck",
+                    type: "HEAD",
+                    asynch: false
+                });
+                authorizationCheck.done(function (data) {
+                    $("#auth").empty().append(" Allowed.");
+                    var packageRequest = $.ajax({
+                        url: "/download/packages",
+                        type: "GET",
+                        asynch: false
+                    });
+                    packageRequest.done(function (data) {
+                        packageCache = [];
+                        $.each(data, function (index, item) {
+                            packageCache.push(item);
+                        });
+                        enableTest();
+                    });
+                    packageRequest.fail(function (jqXHR, textStatus) {
+                        alert("Request for download packages: Unable to retreive available package data." + textStatus);
+                    });
+
+                });
+                authorizationCheck.fail(function (jqXHR, textStatus) {
+                    if (jqXHR.status == 403) {
+                        $("#auth").empty().append(" UNAUTHORIZED - Please contact an administrator to enable access.");
+                    } else {
+                        $("#auth").empty().append(" ERROR - Authorization undetermined. Please contact an administrator for assistance.");
+                    }
+                });
+            });
+            ipRequest.fail(function (jqXHR, textStatus) {
+                alert("Request for client IP: Unable to retreive client IP." + textStatus);
+            });
+            $("#results").empty().append("<p>authorizing client...<span id=\"auth\"></span></p>");
+            $("#results").append("<pre/>");
         });
-        ipRequest.fail(function (jqXHR, textStatus) {
-            alert("Request for client IP: Unable to retreive client IP." + textStatus);
-        });
-        $("#results").empty().append("<p>authorizing client...<span id=\"auth\"></span></p>");
-        //$("#results").append("<input type=button value='Start Test' id=foo></input>");
-        $("#results").append("<pre/>");
-    });
     </script>
 </head>
 <body>

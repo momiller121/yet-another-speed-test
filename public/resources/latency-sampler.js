@@ -26,7 +26,7 @@ function LatencySampler() {
 }
 
 var results = [];
-var doLatency = function () {
+var doLatency = function (callback) {
     results = []; //reset results
     var sampleLimit = 12;
     var sample = function () {
@@ -38,8 +38,8 @@ var doLatency = function () {
                 sample(); //recursive call to collect samples
             } else {
                 var averageLatency = s1.calculateMeanLatency(results);
-                //console.log("Average latency: "+averageLatency+"ms");
                 $("#results pre").append("\r\n\r\n>> Average Latency: " + averageLatency + "ms  (single highest and single lowest value discarded).");
+                callback();
             }
         });
     };

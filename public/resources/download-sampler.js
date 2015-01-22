@@ -43,21 +43,7 @@ function DownloadResponseSampler() {
 };
 
 
-var doDownload = function () {
-    var packageRequest = $.ajax({
-        url: "/download/packages",
-        type: "GET",
-        asynch: false
-    });
-    packageRequest.done(function (data) {
-        packageCache = [];
-        $.each(data, function (index, item) {
-            packageCache.push(item);
-        });
-    });
-    packageRequest.fail(function (jqXHR, textStatus) {
-        alert("Request for download packages: Unable to retreive available package data." + textStatus);
-    });
+var doDownload = function (callback) {
     downresults = []; //reset results
     var sampleLimit = 12;
     var sample = function (sampleIteration, packageCache) {
@@ -76,6 +62,7 @@ var doDownload = function () {
             } else {
                 var responseSummary = s.getResponseSummary(downresults);
                 $("#results pre").append("\r\n\r\n>> Average download throughput: " + responseSummary + "  (average of 2 longest running downloads).");
+                callback();
             }
         });
     };

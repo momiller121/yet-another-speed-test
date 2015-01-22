@@ -64,13 +64,10 @@ app.get('/myip', function(request, response) {
   response.json({ip:request.ip,ips:request.ips});
 });
 
-//service end point providing client access to client IP
+//service end point providing HTTP:HEAD support as a convenience method to test if the client is authorized to access.
 app.head('/authcheck', restrict, function(request, response) {
   response.status(200).end();
 });
-
-
-
 
 /* Service end point for data upload
  * Expecting POST /upload
