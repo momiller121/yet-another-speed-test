@@ -30,7 +30,7 @@ function DownloadResponseSampler() {
             var sorted = resultArray.sort(function (a, b) {
                 return b.bytes - a.bytes;
             }); // sort descending by bytes (we want the largest successful payloads)
-            return Math.round(((sorted[0].rate + sorted[1].rate) / 2)) + " kB/s";
+            return Math.round(((sorted[0].rate + sorted[1].rate) / 2));
         },
         prettyThroughput: function (bytes, time) {
             var kb = bytes / 1024;
@@ -62,7 +62,8 @@ var doDownload = function (callback) {
                 sample(++iteration, packageCache); //recursive call to collect samples
             } else {
                 var responseSummary = s.getResponseSummary(downresults);
-                $("#results div#down").append(">> Average download throughput: <span class=dat>" + responseSummary + "</span>  (average of 2 longest running downloads).<br/>");
+                $("#results div#down").append(">> Average download throughput: <span class=dat>" + responseSummary + " kB/s</span>  (average of 2 longest running downloads).<br/>");
+                testResults.download = responseSummary;
                 callback();
             }
         });

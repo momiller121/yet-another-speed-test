@@ -11,6 +11,7 @@ var config = require('./config');
 var randomBuffers = require('./randomBuffers');
 var log = config.accesslog;
 var serverlog = config.serverlog;
+var resultslog = config.resultslog;
 
 serverlog.info('Server starting up');
 var http = require('http');
@@ -75,6 +76,7 @@ app.head('/authcheck', restrict, function(request, response) {
  * (Data POSTed here is black-holed)
  */
 app.post('/upload', restrict, function(request, response) {
+  utils.markConnection(request);
   var uploadsize = 0;
   request.on("data", function(d) {
     uploadsize += d.length;
@@ -106,6 +108,7 @@ app.get('/download/packages', function(request, response) {
  * If the requested value is not acceptable, the request flows through to a 404.
  */
 app.get('/download/:size', restrict, function(request, response) {
+  utils.markConnection(request);
   var packages = config.download.packages;
   var packageSize = "_"+request.params.size.toUpperCase().trim();
 
@@ -125,6 +128,30 @@ app.get('/download/:size', restrict, function(request, response) {
   }
   response.end();
 });
+
+/* Service end point for result data upload
+ * (Data POSTed here is logged for later trending analysis)
+ */
+app.post('/results', restrict, function(request, response) {
+    var payload = "";
+    request.on("data", function(d) {
+        payload += d;
+        if (payload.length > 3*1024) { //never more that that
+            var msg = "killing connection - results payload was unacceptably large";
+            serverlog.info(msg); //TODO - need to look at logging output for error case
+            response.status(403).json({message:msg});
+            request.connection.destroy();
+            return;
+        }
+    });
+    request.on("end", function() {
+        var resultsObject = utils.convertFormDataToJSON(payload);
+        resultslog.info({connectionUsageCount:request.connection.usageCount,results:resultsObject,clientIp:request.ip},"results received on this connection");
+        var msg = "Received results: "+payload.length+" bytes";
+        response.json({message:msg,results:resultsObject});
+    });
+});
+
 
 app.listen(app.get('port'), function() {
   console.log("yet-another-speed-test app is running at localhost:" + app.get('port'));

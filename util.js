@@ -41,3 +41,24 @@ exports.ipInRange = function(config,ip){
     }
     return result;
 }
+
+exports.markConnection = function(request){
+    if (!request.connection.usageCount) {  // mark the http connection with the client action
+        request.connection.usageCount = 1; // we're staying away from session (cookies) - not all clients are browsers
+    } else {                              // this count informs (assuming http keep-alive) client 'session' activity
+        request.connection.usageCount++;   // on the http connection
+    }
+}
+
+exports.convertFormDataToJSON = function(payload){
+    var payloadObject = {fingerprint: null,latency: null,download: null,upload: null};
+    var parts = payload.split("&");
+    for(var i=0;i<parts.length;i++){
+        var pair = parts[i].split("=");
+        if(payloadObject[pair[0]]==null && !isNaN(pair[1]+1-1)){ // if our template is looking for this name
+            payloadObject[pair[0]] = payloadObject[pair[0]] = pair[1];
+        }
+    }
+    return payloadObject;
+}
+

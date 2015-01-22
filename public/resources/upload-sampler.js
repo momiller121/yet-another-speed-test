@@ -30,7 +30,7 @@ function UploadResponseSampler() {
             var sorted = resultArray.sort(function (a, b) {
                 return b.bytes - a.bytes;
             }); // sort descending by bytes (we want the largest successful payloads)
-            return Math.round(((sorted[0].rate + sorted[1].rate) / 2)) + " kB/s";
+            return Math.round(((sorted[0].rate + sorted[1].rate) / 2));
         },
         steps: function () {
             var ONE_MB = 1024 * 1024;
@@ -77,7 +77,8 @@ var doUpload = function (callback) {
                 sample(++iteration); //recursive call to collect samples
             } else {
                 var responseSummary = s.getResponseSummary(upresults);
-                $("#results div#up").append(">> Average upload throughput: <span class=dat>" + responseSummary + "</span>  (average of 2 longest running uploads).<br/>");
+                $("#results div#up").append(">> Average upload throughput: <span class=dat>" + responseSummary + " kB/s</span>  (average of 2 longest running uploads).<br/>");
+                testResults.upload = responseSummary;
                 callback();
             }
         });

@@ -39,7 +39,8 @@ var doLatency = function (callback) {
                 sample(); //recursive call to collect samples
             } else {
                 var averageLatency = s1.calculateMeanLatency(results);
-                $("#results div#lat").append("<br/>>> Average Latency: <span class=dat>" + averageLatency + "ms</span>  (single highest and single lowest value discarded).<br/>");
+                $("#results div#lat").append("<br/>>> Average Latency: <span class=dat>" + averageLatency + " ms</span>  (single highest and single lowest value discarded).<br/>");
+                testResults.latency = averageLatency;
                 callback();
             }
         });

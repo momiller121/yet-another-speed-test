@@ -65,6 +65,15 @@ var config = {
             period: '1d',   // daily rotation
             count: 3        // keep 3 back copies
         }]
+    }),
+    resultslog: bunyan.createLogger({
+        name: 'results',
+        streams: [{
+            type: 'rotating-file',
+            path: './logs/results.log',
+            period: '1d',   // daily rotation
+            count: 3        // keep 3 back copies
+        }]
     })
 };
 

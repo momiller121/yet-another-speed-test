@@ -24,13 +24,28 @@
             white-space: -o-pre-wrap; /* Opera 7 */
             word-wrap: break-word; /* Internet Explorer 5.5+ */
         }
+        p{padding:0;margin:0;}
         .dat{font-weight:bold;font-size:110%;}
     </style>
     <script>
+        // global object for results collection
+        var testResults = {};
         // display and report results
         var report = function(){
             $('#results p#prompt').empty().append("submitting results...");
-            alert("done");
+            var submitReport = $.ajax({
+                url: "/results",
+                type: "POST",
+                data: testResults,
+                asynch: false
+            });
+            submitReport.done(function (data) {
+                $('#results p#prompt').empty().append("TEST COMPLETED. Results received.");
+            });
+            submitReport.fail(function (jqXHR, textStatus) {
+                alert("Submitting of test results received an error." + textStatus);
+                $('#results p#prompt').empty().append("TEST COMPLETED. Error occured submitting results.");
+            });
         };
 
         // initiate the speed test
@@ -51,11 +66,9 @@
             $("#results").append("<p id=prompt>Press ENTER to begin:</p>");
             // wire the enter key event as a test trigger
             $('body').keydown(function (e) {
-                var keyCode = e.keyCode || e.which,
-                        arrow = {left: 37, up: 38, right: 39, down: 40};
-
+                var keyCode = e.keyCode || e.which;
                 switch (keyCode) {
-                    case 13:    // Enter
+                    case 13:    // Enter key
                         runTest();
                         break;
                 }
@@ -72,6 +85,7 @@
             ipRequest.done(function (data) {
                 $("#ip").empty().append(data.ip);
                 var userAgentId = new Fingerprint({screen_resolution: true, ie_activex: true}).get();
+                testResults.fingerprint = userAgentId;
                 $("#fp").empty().append(userAgentId);
                 var authorizationCheck = $.ajax({
                     url: "/authcheck",
@@ -121,3 +135,10 @@
 <div id=results></div>
 </body>
 </html>
+
+<!-- {
+    "fingerprint": "",
+    "latency": "",
+    "download": "",
+    "upload": ""
+} -->
