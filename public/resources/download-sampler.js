@@ -34,7 +34,7 @@ function DownloadResponseSampler() {
         },
         getFriendlyFormat: function (kbs) {
             if((kbs/1024)>1){
-                return +(Math.round((kbs/1024) + "e+2")  + "e-2") + " MB/sec";
+                return +(Math.round((kbs/1024) + "e+2")  + "e-2") + " MB/second";
             }else{
                 return kbs + " kB/second";
             }
