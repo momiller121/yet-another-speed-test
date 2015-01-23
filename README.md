@@ -3,9 +3,9 @@ yet-another-speed-test
 
 Browser / Node.js (server side) based speed test with a focus on support for IE6. 
 
-> The primary goal of the project is to create a simple (even naive) speed test that is suitable to run within an 
-> an internal network. Instead of focusing on the accuracy or validity of the numeric data produced by the client(s)
-> the effort is to support the ability to trend the relative client perspective of network performace over time.
+> The primary goal of the project is to create a simple (yes, even naive) speed test that is suitable to run within an
+> an internal network. Instead of focusing on the validity of the numeric data produced by the client(s)
+> the effort is to support the ability to trend (over time) the relative client perspective of network performance.
 
 To install:
 
