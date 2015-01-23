@@ -50,7 +50,7 @@
 
         // initiate the speed test
         var runTest = function () {
-            $('body').unbind(); //drop the trigger (user needs to reload the page)
+            $(document).unbind(); //drop the trigger (user needs to reload the page)
             $('#results p#prompt').empty().append("working... (please wait)");
             var thenDownload = function(){
                 doDownload(thenUpload);
@@ -65,7 +65,7 @@
         var enableTest = function () {
             $("#results").append("<p id=prompt>Press ENTER to begin:</p>");
             // wire the enter key event as a test trigger
-            $('body').keydown(function (e) {
+            $(document).keydown(function (e) {
                 var keyCode = e.keyCode || e.which;
                 switch (keyCode) {
                     case 13:    // Enter key
