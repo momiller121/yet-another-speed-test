@@ -27,7 +27,6 @@ var getRandom = function (min, max) {
         }
         uploadBuffers.push(tmpBuff.join(''));
     }
-    console.log(uploadBuffers);
 })();
 
 
