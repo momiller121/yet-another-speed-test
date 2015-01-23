@@ -98,7 +98,7 @@ function UploadResponseSampler() {
 
 var upresults = [];
 var doUpload = function (callback) {
-    $("#results div#up").append("--------------------------------------------------<br/>UPLOAD:<br/>");
+    $("#results div#up").append("--------------------------------------------------<br/>UPLOAD: <span class=dat id=upshort></span><br/>");
     upresults = []; //reset results
     var sampleLimit = 12;
     var sample = function (sampleIteration) {
@@ -110,12 +110,20 @@ var doUpload = function (callback) {
                 bytes: lastUploadSize,
                 rate: Math.round((lastUploadSize / 1024) / (responseTime / 1000))
             });
-            $("#results div#up").append(">> " + lastUploadSize + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(lastUploadSize, responseTime) + "]<br/>");
+            if($.QueryString("view")=="all") {
+                $("#results div#up").append(">> " + lastUploadSize + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(lastUploadSize, responseTime) + "]<br/>");
+            }else{
+                $("#results div#up").append(".");
+            }
             if (upresults.length < sampleLimit && iteration + 1 < s.maxSamples && responseTime < s.responseValidityThreshold) {
                 sample(++iteration); //recursive call to collect samples
             } else {
                 var responseSummary = s.getResponseSummary(upresults);
-                $("#results div#up").append(">> Average upload throughput: <span class=dat>" + s.getFriendlyFormat(responseSummary) + "</span>  (average of 2 longest running uploads).<br/>");
+                if($.QueryString("view")=="all") {
+                    $("#results div#up").append(">> Average upload throughput: <span class=dat>" + s.getFriendlyFormat(responseSummary) + "</span>  (average of 2 longest running uploads).<br/>");
+                }else{
+                    $("#upshort").append(s.getFriendlyFormat(responseSummary));
+                }
                 testResults.upload = responseSummary;
                 callback();
             }

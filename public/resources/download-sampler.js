@@ -51,7 +51,7 @@ function DownloadResponseSampler() {
 
 
 var doDownload = function (callback) {
-    $("#results div#down").append("--------------------------------------------------<br/>DOWNLOAD:<br/>");
+    $("#results div#down").append("--------------------------------------------------<br/>DOWNLOAD: <span class=dat id=downshort></span><br/>");
     downresults = []; //reset results
     var sampleLimit = 12;
     var sample = function (sampleIteration, packageCache) {
@@ -64,12 +64,20 @@ var doDownload = function (callback) {
                 bytes: s.steps[iteration].size,
                 rate: Math.round((s.steps[iteration].size / 1024) / (responseTime / 1000))
             });
-            $("#results div#down").append(">> " + s.steps[iteration].size + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(s.steps[iteration].size, responseTime) + "]<br/>");
+            if($.QueryString("view")=="all"){
+                $("#results div#down").append(">> " + s.steps[iteration].size + " bytes in " + responseTime + "ms  [" + s.prettyThroughput(s.steps[iteration].size, responseTime) + "]<br/>");
+            }else{
+                $("#results div#down").append(".");
+            }
             if (downresults.length < sampleLimit && iteration + 1 < s.maxSamples && responseTime < s.responseValidityThreshold) {
                 sample(++iteration, packageCache); //recursive call to collect samples
             } else {
                 var responseSummary = s.getResponseSummary(downresults);
-                $("#results div#down").append(">> Average download throughput: <span class=dat>" + s.getFriendlyFormat(responseSummary) + "</span>  (average of 2 longest running downloads).<br/>");
+                if($.QueryString("view")=="all") {
+                    $("#results div#down").append(">> Average download throughput: <span class=dat>" + s.getFriendlyFormat(responseSummary) + "</span>  (average of 2 longest running downloads).<br/>");
+                }else{
+                    $("#downshort").append(s.getFriendlyFormat(responseSummary));
+                }
                 testResults.download = responseSummary;
                 callback();
             }
