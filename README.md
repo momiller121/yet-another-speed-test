@@ -60,4 +60,55 @@ The tool uses Bunyan to log JSON data to disk. Our intent is to run that data in
 Kabana. The tool creates a familiar *access.log* and a very basic *server.log*. The main trending value comes from the
 *results.log* which is populated with data submitted by the clients upon completion of the tests.
 
+##A Valid Speed Testing Scenario
+In order for a speed testing scenario to have any validity several things need to be true:
+* The server needs to be able to spew and eat data at rates that prevent it from being the limiting factor
+* The client needs to be able to eat and spew data at rates that prevent it from being the limiting factor
+
+In a perfect world, this might mean:
+####Server Capability Validation
+Using the most efficient http client on the speedtest server, request a large download payload and demonstrate the
+maximum potential data generation rate of the server. For example:
+
+```sh
+-bash-4.1$ time curl http://localhost:5000/download/256Mb > /dev/null
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  256M  100  256M    0     0   724M      0 --:--:-- --:--:-- --:--:--  731M
+0.04user 0.09system 0:00.35elapsed 38%CPU (0avgtext+0avgdata 8736maxresident)k
+0inputs+0outputs (0major+609minor)pagefaults 0swaps
+```
+In this case we can say we have evidence that our server is capable or serving >700Mb/second. We're not going
+to see a transfer rate like that on our network so we'll call that valid.
+####Client Capability Validation
+The next question is the client. Using JavaScript in a browser as our test client leaves us exposed to the
+possibility that the machine, the browser, the browser's JavaScript implementation, and the efficiency of our
+JavaScript speedtest client code could (easily) become the least capable link.
+
+The process for client validation is nearly the same as the server validation - we just need to use the most
+efficient http client from the client host while targeting the previously validated speedtest server:
+```sh
+$ sudo time curl http://ops01:5000/download/256Mb > /dev/null
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  256M  100  256M    0     0  10.6M      0  0:00:24  0:00:24 --:--:-- 10.5M
+       24.14 real         0.16 user         0.44 sys
+```
+This time, the same payload took 24 seconds in transit on the network. If I now point a browser on this same
+client host to the same speedtest server, I would hope to get a result that is basically equivalent.
+
+The ideal way to prove the potential capabilities of the client browser is to install the speedtest server
+on the same host. This won't often be practical or possible.
+
+In our case, we can prove that a fast Macbook Pro (and modern Chrome browser) calling the speedtest
+server on the localhost can produce results approaching 90MB/second. In our network scenario this represents
+ample capacity to demonstrater accurate results. When we point this client across the network it generates
+results showing ~10MB/second.
+
+However, performing the same test on an older Windows laptop
+(using IE9) showed a 50% (~5MB/second) reduced value on the download test compared to the Mac (using the same network port).
+Such a result suggests that the browser based client on that windows host may be an invalid client (bottlenecking
+the results).
+
+
 [navigation timing api]:http://www.w3.org/TR/navigation-timing/
