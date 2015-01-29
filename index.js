@@ -99,8 +99,12 @@ app.post('/upload', restrict, function(request, response) {
 /*
  * Allow the client to discover the supported download packages
  */
-app.get('/download/packages', function(request, response) {
-  response.json(config.download.packages);
+app.get('/download/config', function(request, response) {
+    var p = {
+        "download":config.download,
+        "upload":config.upload
+    };
+  response.json(p);
 });
 
 /* Service end point for data download

@@ -95,13 +95,14 @@
                 authorizationCheck.done(function (data) {
                     $("#auth").empty().append(" Allowed.");
                     var packageRequest = $.ajax({
-                        url: "/download/packages",
+                        url: "/download/config",
                         type: "GET",
                         asynch: false
                     });
                     packageRequest.done(function (data) {
+                        config = data;
                         packageCache = [];
-                        $.each(data, function (index, item) {
+                        $.each(data.download.packages, function (index, item) {
                             packageCache.push(item);
                         });
                         enableTest();
@@ -135,10 +136,3 @@
 <div id=results></div>
 </body>
 </html>
-
-<!-- {
-    "fingerprint": "",
-    "latency": "",
-    "download": "",
-    "upload": ""
-} -->

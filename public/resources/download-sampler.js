@@ -1,5 +1,6 @@
 var downresults = [];
 var packageCache = [];
+var config;
 function DownloadResponseSampler() {
     return {
         run: function (sampleIteration, packages, callback) {

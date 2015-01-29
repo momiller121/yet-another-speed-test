@@ -19,11 +19,17 @@ var config = {
             _64MB: {size: 64 * 1024 * 1024, uri: "/download/64MB"},
             _128MB: {size: 128 * 1024 * 1024, uri: "/download/128MB"},
             _256MB: {size: 256 * 1024 * 1024, uri: "/download/256MB"}
-        }
+        },
+        maxSamples:12, // should be the same as number of packages
+        responseValidityThreshold:8000 //ms (network transit time target)
     },
     upload: {
         //Threshold where we drop a connection that's pushing too much data
-        maxPayload: 1024 * 1024 * 17
+        maxPayload: 1024 * 1024 * 17,
+        // These are the payload size steps that we want the client to upload
+        steps:[128 * 1024, 256 * 1024, 512 * 1024, 1024 * 1024, 2 * 1024 * 1024, 4 * 1024 * 1024, 8 * 1024 * 1024, 16 * 1024 * 1024],
+        maxSamples:8, // should be the same as steps.length
+        responseValidityThreshold:8000 //ms (network transit time target)
     },
     accesslog: bunyan.createLogger({
         name: 'access',
