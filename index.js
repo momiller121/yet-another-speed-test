@@ -150,9 +150,9 @@ app.post('/results', restrict, function(request, response) {
     });
     request.on("end", function() {
         var resultsObject = utils.convertFormDataToJSON(payload);
-        resultslog.info({connectionUsageCount:request.connection.usageCount,results:resultsObject,clientIp:request.ip},"results received on this connection");
+        resultslog.info({connectionUsageCount:request.connection.usageCount,results:resultsObject,clientIp:request.ip, userAgent:request.headers["user-agent"]},"results received on this connection");
         var msg = "Received results: "+payload.length+" bytes";
-        response.json({message:msg,results:resultsObject});
+        response.json({message:msg, userAgent:request.headers["user-agent"], results:resultsObject});
     });
 });
 
