@@ -50,13 +50,14 @@ exports.markConnection = function(request){
     }
 }
 
-exports.convertFormDataToJSON = function(payload){
-    var payloadObject = {fingerprint: null,latency: null,download: null,upload: null};
+exports.convertFormDataToJSON = function(payload){ // expecting application/x-www-form-urlencoded data like fingerprint=3971884212&latency=3.4&download=63051&upload=23012
+    var payloadObject = {fingerprint: "",latency: -1,download: -1,upload: -1}; // sets our types
     var parts = payload.split("&");
     for(var i=0;i<parts.length;i++){
         var pair = parts[i].split("=");
-        if(payloadObject[pair[0]]==null && !isNaN(pair[1]+1-1)){ // if our template is looking for this name
-            payloadObject[pair[0]] = payloadObject[pair[0]] = pair[1];
+        if((payloadObject[pair[0]]=="" || payloadObject[pair[0]]==-1) && !isNaN(pair[1]+1-1)){ // if our template is looking for this name
+            console.log(payloadObject[pair[0]]);
+            payloadObject[pair[0]] = (payloadObject[pair[0]]=="")? pair[1] : Number(pair[1]);
         }
     }
     return payloadObject;
