@@ -56,7 +56,6 @@ exports.convertFormDataToJSON = function(payload){ // expecting application/x-ww
     for(var i=0;i<parts.length;i++){
         var pair = parts[i].split("=");
         if((payloadObject[pair[0]]=="" || payloadObject[pair[0]]==-1) && !isNaN(pair[1]+1-1)){ // if our template is looking for this name
-            console.log(payloadObject[pair[0]]);
             payloadObject[pair[0]] = (payloadObject[pair[0]]=="")? pair[1] : Number(pair[1]);
         }
     }
