@@ -73,9 +73,18 @@
                         break;
                 }
             });
-            $(document).on({ 'touchstart' : function(){
-                runTest();
-            }});
+            var tapped=false
+            $(document).on("touchstart",function(e){
+                if(!tapped){ //if tap is not set, set up single tap
+                    tapped=setTimeout(function(){
+                        tapped=null
+                    },300);   //wait 300ms then run single click code
+                } else {    //tapped within 300ms of last tap. double tap
+                    clearTimeout(tapped); //stop single tap callback
+                    tapped=null;
+                    runTest();
+                }
+            });
         };
 
         // init page display, authZ check, start event
