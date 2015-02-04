@@ -63,7 +63,7 @@
 
         // set up the page for interaction
         var enableTest = function () {
-            $("#results").append("<p id=prompt>Press ENTER to begin:</p>");
+            $("#results").append("<p id=prompt>Press ENTER (or Tap Screen) to begin:</p>");
             // wire the enter key event as a test trigger
             $(document).keydown(function (e) {
                 var keyCode = e.keyCode || e.which;
@@ -73,6 +73,9 @@
                         break;
                 }
             });
+            $(document).on({ 'touchstart' : function(){
+                runTest();
+            }});
         };
 
         // init page display, authZ check, start event
